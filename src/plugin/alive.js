@@ -1,101 +1,60 @@
-import config from '../../config.cjs';
-import pkg, { prepareWAMessageMedia } from '@whiskeysockets/baileys';
-import Jimp from 'jimp';
-const { generateWAMessageFromContent, proto } = pkg;
+const aliveCommand = async (m, gss) => {
+  try {
+    const prefixMatch = m.body.match(/^[/!#.]/);
+    const prefix = prefixMatch ? prefixMatch[0] : '/';
+    const cmd = m.body.startsWith(prefix) ? m.body.slice(prefix.length).trim().toLowerCase() : '';
 
-const alive = async (m, Matrix) => {
-  const uptimeSeconds = process.uptime();
-  const days = Math.floor(uptimeSeconds / (3600 * 24));
-  const hours = Math.floor((uptimeSeconds % (3600 * 24)) / 3600);
-  const minutes = Math.floor((uptimeSeconds % 3600) / 60);
-  const seconds = Math.floor(uptimeSeconds % 60);
-  const timeString = `${String(days).padStart(2, '0')}-${String(hours).padStart(2, '0')}-${String(minutes).padStart(2, '0')}-${String(seconds).padStart(2, '0')}`;
-  const prefix = config.PREFIX;
-  const cmd = m.body.startsWith(prefix) ? m.body.slice(prefix.length).split(' ')[0].toLowerCase() : '';
-  const text = m.body.slice(prefix.length + cmd.length).trim();
+    if (cmd === 'alive') {
+      const imageUrl = 'https://i.ibb.co/xJTgFFZ/20241226-174100.jpg'; // ඔබේ රූපය URL එක මෙතන සවි කරන්න
+      const audioUrl = 'https://github.com/DEXTER-ID-PROJECT/DATA-JSON/raw/refs/heads/main/Audio/alive.mp3'; // Voice Note URL
 
-  if (['alive', 'uptime', 'runtime'].includes(cmd)) {
-    const width = 800;
-    const height = 500;
-    const image = new Jimp(width, height, 'black');
-    const font = await Jimp.loadFont(Jimp.FONT_SANS_128_WHITE);
-    const textMetrics = Jimp.measureText(font, timeString);
-    const textHeight = Jimp.measureTextHeight(font, timeString, width);
-    const x = (width / 2) - (textMetrics / 2);
-    const y = (height / 2) - (textHeight / 2);
-    image.print(font, x, y, timeString, width, Jimp.HORIZONTAL_ALIGN_CENTER | Jimp.VERTICAL_ALIGN_MIDDLE);
-    const buffer = await image.getBufferAsync(Jimp.MIME_PNG);
-    
-    const uptimeMessage = `*🤖 ETHIX-MD Status Overview*
-_________________________________________
+      // කාලය ලබාගැනීම
+      const uptime = process.uptime();
+      const days = Math.floor(uptime / (60 * 60 * 24));
+      const hours = Math.floor((uptime % (60 * 60 * 24)) / (60 * 60));
+      const minutes = Math.floor((uptime % (60 * 60)) / 60);
+      const seconds = Math.floor(uptime % 60);
 
-*📆 ${days} Day(s)*
-*🕰️ ${hours} Hour(s)*
-*⏳ ${minutes} Minute(s)*
-*⏲️ ${seconds} Second(s)*
-_________________________________________
-`;
-    
-    const buttons = [
-      {
-        "name": "quick_reply",
-        "buttonParamsJson": JSON.stringify({
-          display_text: "MENU",
-          id: `${prefix}menu`
-        })
-      },
-      {
-        "name": "quick_reply",
-        "buttonParamsJson": JSON.stringify({
-          display_text: "PING",
-          id: `${prefix}ping`
-        })
-      }
-    ];
+      // කැප්ෂන් නිර්මාණය
+      const caption = `*🤖 DASSA-MD BOT IS ONLINE*\n_________________________________________\n\n*📆 ${days} Day*\n*🕰️ ${hours} Hour*\n*⏳ ${minutes} Minute*\n*⏲️ ${seconds} Second*\n_________________________________________\n\n*⫷⫷⫷ \`DASSA MD BEST BOT\` ⫸⫸⫸*`;
 
-    const msg = generateWAMessageFromContent(m.from, {
-      viewOnceMessage: {
-        message: {
-          messageContextInfo: {
-            deviceListMetadata: {},
-            deviceListMetadataVersion: 2
+      // Image එක සහ කැප්ෂන් එක යැවීම
+      await gss.sendMessage(m.from, {
+        image: { url: imageUrl },
+        caption: caption,
+        contextInfo: {
+          quotedMessage: m.message,
+          forwardingScore: 999,
+          isForwarded: true,
+          forwardedNewsletterMessageInfo: {
+            newsletterJid: '120363286758767913@newsletter',
+            newsletterName: 'DEXTER FORWARD',
+            serverMessageId: 143,
           },
-          interactiveMessage: proto.Message.InteractiveMessage.create({
-            body: proto.Message.InteractiveMessage.Body.create({
-              text: uptimeMessage
-            }),
-            footer: proto.Message.InteractiveMessage.Footer.create({
-              text: "© ᴘᴏᴡᴇʀᴅ ʙʏ ᴇᴛʜɪx-ᴍᴅ"
-            }),
-            header: proto.Message.InteractiveMessage.Header.create({
-              ...(await prepareWAMessageMedia({ image: buffer }, { upload: Matrix.waUploadToServer })),
-              title: ``,
-              gifPlayback: false,
-              subtitle: "",
-              hasMediaAttachment: false
-            }),
-            nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
-              buttons
-            }),
-            contextInfo: {
-              quotedMessage: m.message,
-              forwardingScore: 999,
-              isForwarded: true,
-              forwardedNewsletterMessageInfo: {
-                newsletterJid: '120363249960769123@newsletter',
-                newsletterName: "Ethix-MD",
-                serverMessageId: 143
-              }
-            }
-          }),
         },
-      },
-    }, {});
+      }, { quoted: m });
 
-    await Matrix.relayMessage(msg.key.remoteJid, msg.message, {
-      messageId: msg.key.id
-    });
+      // Voice Note එක යැවීම
+      await gss.sendMessage(m.from, {
+        audio: { url: audioUrl },
+        mimetype: 'audio/mp4', // MIME type
+        ptt: true, // Voice note ලෙස යැවීම
+        contextInfo: {
+          quotedMessage: m.message,
+          forwardingScore: 999,
+          isForwarded: true,
+          forwardedNewsletterMessageInfo: {
+            newsletterJid: '120363286758767913@newsletter',
+            newsletterName: 'DEXTER FORWARD',
+            serverMessageId: 143,
+          },
+        },
+      }, { quoted: m });
+
+    }
+  } catch (err) {
+    console.error(err);
   }
 };
 
-export default alive;
+export default aliveCommand;
