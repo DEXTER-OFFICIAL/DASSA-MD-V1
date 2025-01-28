@@ -143,7 +143,7 @@ async function start() {
             await Matrix.readMessages([mek.key]);
             
             if (config.AUTO_STATUS_REPLY) {
-                const customMessage = config.STATUS_READ_MSG || '✅ Auto Status Seen Bot By Ethix-MD-V2';
+                const customMessage = config.STATUS_READ_MSG || '✅ Auto Status Seen Bot By dassa-MD-V1';
                 await Matrix.sendMessage(fromJid, { text: customMessage }, { quoted: mek });
             }
         }
