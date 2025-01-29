@@ -5,7 +5,7 @@ const aliveCommand = async (m, gss) => {
     const cmd = m.body.startsWith(prefix) ? m.body.slice(prefix.length).trim().toLowerCase() : '';
 
     if (cmd === 'alive') {
-      const imageUrl = 'https://i.ibb.co/xJTgFFZ/20241226-174100.jpg'; // ඔබේ රූපය URL එක මෙතන සවි කරන්න
+      const imageUrl = 'https://whatsapp.com/channel/0029Vag1WQFJf05dF0pQeU3u/338'; // ඔබේ රූපය URL එක මෙතන සවි කරන්න
       const audioUrl = 'https://github.com/DEXTER-ID-PROJECT/DATA-JSON/raw/refs/heads/main/Audio/alive.mp3'; // Voice Note URL
 
       // කාලය ලබාගැනීම
