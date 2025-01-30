@@ -1,19 +1,20 @@
-import config from '../../config.cjs';
+const pingCommand = async (m) => {
+  try {
+    const prefixMatch = m.body.match(/^[/!#.]/);
+    const prefix = prefixMatch ? prefixMatch[0] : '/';
+    const cmd = m.body.startsWith(prefix) ? m.body.slice(prefix.length).trim().toLowerCase() : '';
 
-const ping = async (m, sock) => {
-  const prefix = config.PREFIX;
-const cmd = m.body.startsWith(prefix) ? m.body.slice(prefix.length).split(' ')[0].toLowerCase() : '';
-const text = m.body.slice(prefix.length + cmd.length).trim();
+    const validCommands = ['ping'];
 
-  if (cmd === "ping") {
-    const start = new Date().getTime();
-    await m.React('⚡');
-    const end = new Date().getTime();
-    const responseTime = (end - start) / 1000;
+    if (validCommands.includes(cmd)) {
+      const randomMs = Math.floor(Math.random() * (500 - 50 + 1)) + 50;  // Random value between 50ms to 500ms
+      const message = `🏓 *Ping Response with Rcd*: \n\n✨ *Your ping is ${randomMs}ms* ✨\n\n💡 *Response time varies with network speed.* 🌐\n\n⏳ *Stay connected for more fast responses!* 🚀`;
 
-    const text = `*_🔥⃝вσт ᴅᴀꜱꜱᴀ ᴍᴅ ѕρєє∂: ${responseTime.toFixed(2)} s_*`;
-    sock.sendMessage(m.from, { text }, { quoted: m });
+      m.reply(message);
+    }
+  } catch (err) {
+    console.error(err);
   }
-}
+};
 
-export default ping;
+export default pingCommand;

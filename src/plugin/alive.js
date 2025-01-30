@@ -27,25 +27,8 @@ const aliveCommand = async (m, gss) => {
           forwardingScore: 999,
           isForwarded: true,
           forwardedNewsletterMessageInfo: {
-            newsletterJid: '120363286758767913@newsletter',
-            newsletterName: 'DEXTER FORWARD',
-            serverMessageId: 143,
-          },
-        },
-      }, { quoted: m });
-
-      // Voice Note එක යැවීම
-      await gss.sendMessage(m.from, {
-        audio: { url: audioUrl },
-        mimetype: 'audio/mp4', // MIME type
-        ptt: true, // Voice note ලෙස යැවීම
-        contextInfo: {
-          quotedMessage: m.message,
-          forwardingScore: 999,
-          isForwarded: true,
-          forwardedNewsletterMessageInfo: {
-            newsletterJid: '120363286758767913@newsletter',
-            newsletterName: 'DEXTER FORWARD',
+            newsletterJid: '',
+            newsletterName: 'DASSA FORWARD',
             serverMessageId: 143,
           },
         },
