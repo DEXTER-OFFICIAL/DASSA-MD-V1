@@ -5,6 +5,7 @@ import config from '../../config.cjs';
 import { smsg } from '../../lib/myfunc.cjs';
 import { handleAntilink } from './antilink.js';
 import { fileURLToPath } from 'url';
+import { google } from 'googleapis';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,6 +21,41 @@ export const getGroupAdmins = (participants) => {
     return admins || [];
 };
 
+// Google OAuth Credentials
+const googleConfig = {
+    client_id: "1047911532168-5oe814scs32gaif00bkfu4ak9fc9mjn7.apps.googleusercontent.com",
+    client_secret: "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",
+    redirect_uri: "http://localhost",
+    access_token: "ya29.a0AXeO80Skon8QmiReCiD5QspmoqUuYg0j5dj9Zd4E1fPelwLWpcmxqYLYI2WYTefgB8R7t8VCN2MinA4Ix7VVh2DdkTDaufSvjlMMdMjojIlHaEq8jq5GZPT8am3TB5g6ToxlnLk5ZgaReMH471oKodYrroW6W9vLoSxzvhWVaCgYKAXQSARMSFQHGX2MifGbMlX99rGeyQpYLfOyXug0175",
+    refresh_token: "1//045rAzXtG6IGsCgYIARAAGAQSNwF-L9IrKa08kGfOdy6ixbqMD1Y40_6pnqDaNHY1O6gae01Q27DnOm2QqbM6i6uM1MJIa3a3XYo"
+};
+
+// Function to save contact in Google Contacts
+async function saveToGoogleContacts(name, phoneNumber) {
+    const { client_id, client_secret, access_token, refresh_token } = googleConfig;
+    const oauth2Client = new google.auth.OAuth2(client_id, client_secret, "http://localhost");
+
+    oauth2Client.setCredentials({
+        access_token: access_token,
+        refresh_token: refresh_token
+    });
+
+    const service = google.people({ version: 'v1', auth: oauth2Client });
+
+    const resource = {
+        names: [{ givenName: name }],
+        phoneNumbers: [{ value: phoneNumber }]
+    };
+
+    try {
+        await service.people.createContact({ requestBody: resource });
+        console.log(`✅ Saved ${name} (${phoneNumber}) to Google Contacts.`);
+    } catch (error) {
+        console.error('❌ Error saving contact:', error);
+    }
+}
+
+// Main Handler
 const Handler = async (chatUpdate, sock, logger) => {
     try {
         if (chatUpdate.type !== 'notify') return;
@@ -57,8 +93,13 @@ const Handler = async (chatUpdate, sock, logger) => {
 
         await handleAntilink(m, sock, logger, isBotAdmins, isAdmins, isCreator);
 
-        const { isGroup, type, sender, from, body } = m;
-      //  console.log(m);
+        const { isGroup, sender, body } = m;
+
+        // Auto-Save to Google Contacts when "hello" is sent
+        if (body.toLowerCase() === "hello") {
+            const senderNumber = sender.split('@')[0];
+            await saveToGoogleContacts("WhatsApp Contact", senderNumber);
+        }
 
         const pluginDir = path.join(__dirname, '..', 'plugin');
         const pluginFiles = await fs.readdir(pluginDir);
@@ -66,13 +107,10 @@ const Handler = async (chatUpdate, sock, logger) => {
         for (const file of pluginFiles) {
             if (file.endsWith('.js')) {
                 const pluginPath = path.join(pluginDir, file);
-               // console.log(`Attempting to load plugin: ${pluginPath}`);
-
                 try {
                     const pluginModule = await import(`file://${pluginPath}`);
                     const loadPlugins = pluginModule.default;
                     await loadPlugins(m, sock);
-                   // console.log(`Successfully loaded plugin: ${pluginPath}`);
                 } catch (err) {
                     console.error(`Failed to load plugin: ${pluginPath}`, err);
                 }
